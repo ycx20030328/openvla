@@ -192,7 +192,7 @@ export HF_HUB_DISABLE_XET=1
 export HF_HUB_ENABLE_HF_TRANSFER=0
 ```
 
-如果你走代理，另外加上：
+如果走代理，另外加上：
 
 ```bash
 export HTTP_PROXY=http://127.0.0.1:7897
@@ -201,7 +201,6 @@ export http_proxy=$HTTP_PROXY
 export https_proxy=$HTTPS_PROXY
 ```
 
-> 作用说明：  
 > - `HF_HUB_ENABLE_HF_TRANSFER=0`：下载失败时错误信息更清晰，且常比 hf_transfer 稳。  
 > - `HF_HUB_DISABLE_XET=1`：避免部分网络环境对 xet/cas 链路不稳定。
 
@@ -304,7 +303,7 @@ $OPENVLA_PY experiments/robot/libero/run_libero_eval.py \
 
 ---
 
-## 8. 推理过程中每一步在做什么（机制解释）
+## 8. 推理过程中每一步在做什么
 
 下面对应 `experiments/robot/libero/run_libero_eval.py` 的主流程：
 
@@ -340,14 +339,14 @@ $OPENVLA_PY experiments/robot/libero/run_libero_eval.py \
 
 ---
 
-## 9. 模型架构（初学者可读版）
+## 9. 模型架构
 
-### 9.1 OpenVLA 是什么
+### 9.1 OpenVLA
 
 OpenVLA 是 Vision-Language-Action（视觉-语言-动作）模型。  
 它把“图像 + 指令文本”映射成“机器人动作”。
 
-### 9.2 核心结构（结合官方说明）
+### 9.2 核心结构
 
 1. 视觉编码器（Vision Backbone）  
    OpenVLA-7B 使用 Prismatic 的 `prism-dinosiglip-224px` 路线，融合 DINOv2 + SigLIP 视觉特征。
@@ -384,16 +383,10 @@ tail -f $OPENVLA_REPO/experiments/logs/EVAL-libero_spatial-openvla-*.txt
 
 ### 10.3 本机当前已观测到的实际结果样例
 
-在 `EVAL-libero_spatial-openvla-2026_04_07-23_13_27.txt` 中，中途统计到：
+- `# episodes completed : 500`
+- `# successes: 411 (82.2%)`
 
-- `# episodes completed so far: 177`
-- `# successes: 152 (85.9%)`
-
-说明：
-
-1. 这是中途结果，不是最终 500 rollout 终值。
-2. 该中途值已接近官方报告量级（Spatial 官方均值约 `84.7% ± 0.9%`）。
-3. 最终结论应以完整 500 回合结果为准。
+该值已接近官方报告量级（Spatial 官方均值约 `84.7% ± 0.9%`）。
 
 ---
 
@@ -461,7 +454,7 @@ kill -9 <PID>
 
 或直接换端口。
 
-### 11.6 TensorFlow / Gym / robosuite Warning 很多
+### 11.6 TensorFlow / Gym / robosuite Warning 
 
 以下通常不是致命错误：
 
@@ -481,7 +474,7 @@ kill -9 <PID>
 
 ---
 
-## 12. 官方数据集说明（和你当前复现的关系）
+## 12. 官方数据集说明
 
 1. 跑官方 `run_libero_eval.py` 评测，核心依赖是 LIBERO 环境、任务定义和官方 checkpoint。
 2. OpenVLA README 中提到的 `modified_libero_rlds`（约 10GB）主要用于微调训练，不是评测必须。
@@ -493,7 +486,7 @@ cd $WORK_ROOT
 git clone https://huggingface.co/datasets/openvla/modified_libero_rlds
 ```
 
-> 作用说明：当你后续要做“再训练/微调”时，这份 RLDS 数据才是关键。
+> 作当后续要做“再训练/微调”时，这份 RLDS 数据是关键
 
 ---
 
@@ -535,9 +528,7 @@ git clone https://huggingface.co/datasets/openvla/modified_libero_rlds
 ---
 
 ## 16. 总结
-
 在 `Ubuntu 20.04 + RTX A5000` 上，本流程已经可以打通：
-
 1. OpenVLA 本地加载与 GPU 推理
 2. LIBERO 官方四套任务的标准评测入口
 3. 日志与视频证据链输出

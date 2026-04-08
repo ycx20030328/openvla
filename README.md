@@ -1,24 +1,21 @@
-# OpenVLA 在 Ubuntu 20.04 + RTX A5000 上的完整部署与复现指南（中文实战版）
-
-本 README 是面向初学者的从零复现手册，目标是把 OpenVLA 在本机跑通到可复现实验结果。  
-内容基于官方 OpenVLA/LIBERO 文档，并结合本机真实踩坑过程整理而成。
+# OpenVLA 在 Ubuntu 20.04 + RTX A5000 上的完整部署与复现
+  
+内容基于官方 OpenVLA/LIBERO 文档，并结合本机复现部署过程整理而成。
 
 ---
 
 ## 1. 复现目标与范围
 
-### 1.1 我们要做什么
-
-我们要完成两件事：
+### 1.1 数据集
 
 1. 在本地单机 GPU 上成功加载 OpenVLA 模型并推理。
 2. 按官方方式，在 LIBERO 四个任务套件上运行评测脚本复现：
    - `LIBERO-Spatial`
    - `LIBERO-Object`
    - `LIBERO-Goal`
-   - `LIBERO-10`（又叫 LIBERO-Long）
+   - `LIBERO-10`
 
-### 1.2 本文覆盖的内容
+### 1.2 具体过程
 
 1. 系统与硬件检查
 2. Conda 环境与依赖安装
@@ -44,7 +41,7 @@
 - Driver: `535.183.01`
 - `nvidia-smi` 显示 CUDA Runtime: `12.2`
 
-### 2.3 复现环境关键版本（建议保持一致）
+### 2.3 复现环境版本（建议保持一致）
 
 - Python: `3.10.20`
 - PyTorch: `2.2.0+cu121`
@@ -57,7 +54,7 @@
 - mujoco: `3.1.6`
 - robosuite: `1.4.1`
 
-> 作用说明：这些版本组合是当前已验证可跑通的组合。OpenVLA 对版本比较敏感，特别是 `torch / transformers / flash-attn / numpy`。
+> 这些版本组合是当前已验证可跑通的组合。OpenVLA 对版本比较敏感，特别是 `torch / transformers / flash-attn / numpy`。
 
 ---
 
@@ -87,12 +84,9 @@ openvla_sim/
 │   └── openvla-7b-finetuned-libero-10/
 └── .hf_cache/                    # HuggingFace 下载缓存
 ```
-
-> 作用说明：统一目录能避免路径错乱，且便于汇报、迁移和复现。
-
 ---
 
-## 4. 从零安装环境（一步一步）
+## 4. 从零安装环境
 
 ### 4.1 克隆 OpenVLA
 
@@ -121,8 +115,7 @@ conda run -n openvla pip install "https://github.com/Dao-AILab/flash-attention/r
 cd $OPENVLA_REPO
 conda run -n openvla pip install -e . --no-deps
 ```
-
-> 作用说明：  
+  
 > - `torch + cu121`：确保 GPU 计算可用。  
 > - `requirements-min.txt`：最小推理依赖。  
 > - `flash-attn`：降低显存占用并加速推理。  
@@ -157,7 +150,6 @@ $OPENVLA_PY -m pip install jsonlines matplotlib rich tensorflow==2.15.0 tensorfl
 $OPENVLA_PY -m pip install "numpy<2" "opencv-python<4.12"
 ```
 
-> 作用说明：  
 > - `tensorflow_datasets==4.9.3` 与 `dlimp` 是已知兼容组合。  
 > - `numpy<2` 可规避一批旧依赖兼容问题。  
 > - `opencv-python<4.12` 避免和 numpy 版本冲突。
@@ -242,7 +234,7 @@ ls -lh $WORK_ROOT/models/openvla-7b-finetuned-libero-spatial/model.safetensors.i
 
 ## 7. 官方复现命令（LIBERO）
 
-### 7.1 先做最小烟雾测试（强烈建议）
+### 7.1 先做最小 smoke test
 
 ```bash
 cd $OPENVLA_REPO
@@ -258,9 +250,9 @@ $OPENVLA_PY experiments/robot/libero/run_libero_eval.py \
   --run_id_note smoke_spatial
 ```
 
-> 作用说明：先验证链路无误（模型加载、环境创建、动作推理、视频保存）再跑 500 次完整评测。
+> 先验证链路无误（模型加载、环境创建、动作推理、视频保存）再跑 500 次完整评测。
 
-### 7.2 四套任务的正式复现（官方入口脚本）
+### 7.2 四套任务的正式复现
 
 #### LIBERO-Spatial
 
@@ -505,7 +497,7 @@ git clone https://huggingface.co/datasets/openvla/modified_libero_rlds
 
 ---
 
-## 13. 一键核对清单（执行前后自检）
+## 13. 执行前后自检
 
 ### 13.1 执行前
 
@@ -550,10 +542,3 @@ git clone https://huggingface.co/datasets/openvla/modified_libero_rlds
 2. LIBERO 官方四套任务的标准评测入口
 3. 日志与视频证据链输出
 4. 常见网络/依赖/端口错误的可执行补救方案
-
-如果你接下来要从“仿真复现”走向“真实 Airbot 部署”，建议下一步做三件事：
-
-1. 先固定相机内参与图像预处理流程，保证输入分布一致。
-2. 用少量真机示教做 LoRA 微调到 Airbot 任务域。
-3. 用当前同一套推理接口（图像+文本->动作）接入真实控制栈，逐步放开速度与动作范围。
-
